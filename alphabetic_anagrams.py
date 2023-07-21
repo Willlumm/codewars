@@ -10,8 +10,8 @@ def count_perms(char_counts):
     for count in char_counts.values():
         if count == 0:
             continue
-        perms /= factorial(count)
-    return int(perms)
+        perms //= factorial(count)
+    return perms
 
 def list_position(word):
     """Return the anagram list position of the word"""
@@ -29,10 +29,12 @@ def list_position(word):
         char_counts[char0] -= 1
     return total_perms
         
-
 print(f"{list_position('A')} == 1")
 print(f"{list_position('ABAB')} == 2")
 print(f"{list_position('AAAB')} == 1")
 print(f"{list_position('BAAA')} == 4")
 print(f"{list_position('QUESTION')} == 24572")
 print(f"{list_position('BOOKKEEPER')} == 10743")
+
+718393983731145681789
+718393983731145698173
