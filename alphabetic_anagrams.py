@@ -11,12 +11,12 @@ def count_perms(char_counts):
         if count == 0:
             continue
         perms /= factorial(count)
-    return perms
+    return int(perms)
 
 def list_position(word):
     """Return the anagram list position of the word"""
     char_counts = {char: word.count(char) for char in sorted(list(word))}
-    total_perms = 0
+    total_perms = 1
     for char0 in word:
         for char, count in char_counts.items():
             if char == char0:
@@ -27,7 +27,7 @@ def list_position(word):
             total_perms += count_perms(char_counts)
             char_counts[char] += 1
         char_counts[char0] -= 1
-    return int(total_perms + 1)
+    return total_perms
         
 
 print(f"{list_position('A')} == 1")
