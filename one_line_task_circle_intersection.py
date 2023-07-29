@@ -7,4 +7,4 @@
 # from math import *;circleIntersection=lambda a,b,r:2*r>dist(a,b) and int(2*r*r*acos(dist(a,b)/2/r)-sqrt((2*dist(a,b)*r)**2-dist(a,b)**4)/2)
 # from math import *;circleIntersection=lambda a,b,r:2*r>dist(a,b) and (4*r*r*acos(dist(a,b)/2/r)-sqrt((2*dist(a,b)*r)**2-dist(a,b)**4))//2
 # from math import *;t=lambda a,b,r:2*r>dist(a,b) and 2*acos(dist(a,b)/2/r);circleIntersection=lambda a,b,r:r*r*(t(a,b,r)-sin(t(a,b,r)))//1
-from math import *;t=lambda a,b,r:2*acos(min(dist(a,b)/2/r,1));circleIntersection=lambda a,b,r:r*r*(t(a,b,r)-sin(t(a,b,r)))//1
+from math import*;t=lambda a,b,r:2*acos(min(dist(a,b)/2/r,1));circleIntersection=lambda a,b,r:r*r*(t(a,b,r)-sin(t(a,b,r)))//1
