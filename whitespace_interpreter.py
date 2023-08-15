@@ -42,6 +42,8 @@ class Parser:
     def goback(self):
         if self.i_save:
             self.i = self.i_save
+        else:
+            raise Exception("Return outside of subroutine call")
 
     def trigger_exit(self):
         self.exit_flag = True
@@ -76,12 +78,12 @@ class Parser:
             "\t\n\t ":  lambda: self.heap.update({self.stack.pop(): ord(self.inp.pop(0))}),            # Read a character from input, a, Pop a value off the stack, b, then store the ASCII value of a at heap address b.
             "\t\n\t\t": lambda: self.heap.update({self.stack.pop(): self.inp.pop(0)}), # Read a number from input, a, Pop a value off the stack, b, then store a at heap address b.
             # Flow Control
-            "\n  ":     lambda l: self.gotos.update({l: self.i}),              # Mark a location in the program with label n.
+            # "\n  ":     "LABEL", # lambda l: self.gotos.update({l: self.i}),              # Mark a location in the program with label n.
             "\n \t":    lambda l: self.goto(self.gotos[l], save=self.i),  # Call a subroutine with the location specified by label n.
             "\n \n":    lambda l: self.goto(self.gotos[l]), # Jump unconditionally to the position specified by label n.
             "\n\t ":    lambda l: None if self.stack.pop() != 0 else self.goto(self.gotos[l]), # Pop a value off the stack and jump to the label specified by n if the value is zero.
             "\n\t\t":   lambda l: None if self.stack.pop() >= 0 else self.goto(self.gotos[l]),   # Pop a value off the stack and jump to the label specified by n if the value is less than zero.
-            "\n\t\n":   lambda: self.goback, # Exit a subroutine and return control to the location from which the subroutine was called.
+            "\n\t\n":   self.goback, # Exit a subroutine and return control to the location from which the subroutine was called.
             "\n\n\n":   self.trigger_exit                                               # Exit the program.
         }
         if self.q in imps:
@@ -90,13 +92,15 @@ class Parser:
     def compile(self, code):
         for char in code:
             if char not in {" ", "\t", "\n"}:
-                self.i += 1
                 continue
             self.q += char
             if self.mode == "imp":
                 imp = self.parse_imp()
-                if not imp:
-                    self.i += 1
+                if self.q == "\n  ":
+                    self.mode = "label"
+                    self.clear_q()
+                    continue
+                elif not imp:
                     continue
                 print(unbleach(self.q))
                 self.clear_q()
@@ -111,7 +115,6 @@ class Parser:
                 n = parse_num(self.q)
                 print(n)
                 self.imp_list.append((imp, n))
-                print(self.stack)
                 self.mode = "imp"
                 self.clear_q()
                 imp = None
@@ -119,22 +122,33 @@ class Parser:
                 l = self.q
                 print(unbleach(l))
                 self.imp_list.append((imp, l))
-                print(self.stack)
                 self.mode = "imp"
                 self.clear_q()
                 imp = None
-            self.i += 1
+            elif self.mode =="label" and char == "\n":
+                l = self.q
+                print(unbleach(l))
+                if l in self.gotos:
+                    raise Exception("Labels must be unique")
+                self.gotos[l] = len(self.imp_list) - 1
+                print(self.gotos)
+                self.mode = "imp"
+                self.clear_q()
+                imp = None
     
     def execute(self, inp):
         self.inp = [c for line in inp.split("\n") for c in line]
-        for imp, n, in self.imp_list:
+        while not self.exit_flag:
+            print(self.i, end=" ")
+            imp, n = self.imp_list[self.i]
             if n is not None:
                 imp(n)
             else:
                 imp()
-            if self.exit_flag:
-                print("".join(self.output))
-                return "".join(self.output)
+            print(self.i_save, self.stack)
+            self.i += 1
+        print("".join(self.output))
+        return "".join(self.output)
         raise Exception("Unclean termination")
 
 def whitespace(code, inp=""):
