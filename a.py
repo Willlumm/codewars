@@ -29,7 +29,6 @@ class Parser:
         self.i_save = None
         self.q = ""
         self.exit_flag = False
-        self.imp_list = []
 
     def clear_q(self):
         self.q = ""
@@ -87,8 +86,10 @@ class Parser:
         if self.q in imps:
             return imps[self.q]
         
-    def compile(self, code):
-        for char in code:
+    def run(self, code, inp=""):
+        self.inp = [c for line in inp.split("\n") for c in line]
+        while self.i < len(code):
+            char = code[self.i]
             if char not in {" ", "\t", "\n"}:
                 self.i += 1
                 continue
@@ -105,12 +106,13 @@ class Parser:
                 elif "l" in imp.__code__.co_varnames:
                     self.mode = "l"
                 else:
-                    self.imp_list.append((imp, None))
+                    imp()
+                    print(self.stack)
                     imp = None
             elif self.mode == "n" and char == "\n":
                 n = parse_num(self.q)
                 print(n)
-                self.imp_list.append((imp, n))
+                imp(n)
                 print(self.stack)
                 self.mode = "imp"
                 self.clear_q()
@@ -118,28 +120,72 @@ class Parser:
             elif self.mode == "l" and char == "\n":
                 l = self.q
                 print(unbleach(l))
-                self.imp_list.append((imp, l))
+                imp(l)
                 print(self.stack)
                 self.mode = "imp"
                 self.clear_q()
                 imp = None
-            self.i += 1
-    
-    def execute(self, inp):
-        self.inp = [c for line in inp.split("\n") for c in line]
-        for imp, n, in self.imp_list:
-            if n is not None:
-                imp(n)
-            else:
-                imp()
             if self.exit_flag:
                 print("".join(self.output))
                 return "".join(self.output)
+            self.i += 1
         raise Exception("Unclean termination")
 
 def whitespace(code, inp=""):
     print(unbleach(code))
     print(inp)
     parser = Parser()
-    parser.compile(code)
-    return parser.execute(inp)
+    return parser.run(code, inp=inp)
+
+    
+
+# "   \t     \t\n\t\n  \n\n\n"
+# "  "              Push n onto the stack.
+# " \t     \t\n"    65
+# "\t\n \t" Pop a value off the stack and output it as a number.
+# "\n\n\n"  Exit the program.
+
+# ss stn ss stsn ss sttn sts sts ntn st nnn
+# ss stn ss stsn ss sttn sts sts ntnst nnn
+
+# ss stn ss sttn ss sn ss stsn ss sn ss stn nss n tns tn tsn nnn
+
+
+# ss    Push n onto the stack.
+# stn    1
+# ss    Push n onto the stack.
+# stsn  10
+# ss    Push n onto the stack.
+# sttn  11
+# sts   Duplicate the nth value from the top of the stack and push onto the stack.
+# sts   Duplicate the nth value from the top of the stack and push onto the stack.
+
+
+output1 = "ssstnssstsnsssttnstsstsntnstnnn".replace("s", " ").replace("t", "\t").replace("n", "\n")
+
+print(whitespace(output1))
+
+3214
+
+ss
+3
+ss
+2
+ss
+1
+ss
+4
+ss
+6
+ss
+5
+ss
+7
+snt
+stn
+3
+tnst
+tnst
+tnst
+tnst
+nnn
